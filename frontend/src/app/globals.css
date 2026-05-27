@@ -53,19 +53,34 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom premium styles */
 .glass {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #0f172a;
 }
 
 .dark .glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(30, 41, 59, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+}
+
+/* FIX: Text visibility on glass cards */
+.glass h1, .glass h2, .glass h3, .glass h4 {
+  color: #0f172a;
+}
+.dark .glass h1, .dark .glass h2, .dark .glass h3, .dark .glass h4 {
+  color: #f8fafc;
+}
+.glass p, .glass span, .glass td, .glass th, .glass label {
+  color: #334155;
+}
+.dark .glass p, .dark .glass span, .dark .glass td, .dark .glass th, .dark .glass label {
+  color: #cbd5e1;
 }
 
 .gradient-bg {
@@ -102,7 +117,6 @@ body {
   left: 125%;
 }
 
-/* Custom loading pulse */
 .pulse-loader {
   display: inline-block;
   position: relative;

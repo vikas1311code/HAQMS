@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  role         String
+  name         String
+  createdAt    DateTime      @default(now())
+  appointments Appointment[]
+  doctor       Doctor?
+  queueTokens  QueueToken[]
+}
+
+model Patient {
+  id             Int           @id @default(autoincrement())
+  name           String
+  email          String        @unique
+  phone          String?
+  dateOfBirth    DateTime?
+  address        String?
+  medicalHistory String?
+  createdAt      DateTime      @default(now())
+  appointments   Appointment[]
+  queueTokens    QueueToken[]
+}
+
+model Doctor {
+  id             Int           @id @default(autoincrement())
+  userId         Int           @unique
+  specialization String?
+  appointments   Appointment[]
+  user           User          @relation(fields: [userId], references: [id])
+  slots          DoctorSlot[]
+}
+
+model DoctorSlot {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  startTime DateTime
+  endTime   DateTime
+  isBooked  Boolean  @default(false)
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+  @@unique([doctorId, startTime])
+}
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  patientId   Int
+  doctorId    Int
+  userId      Int?
+  scheduledAt DateTime
+  status      String   @default("pending")
+  notes       String?
+  createdAt   DateTime @default(now())
+  doctor      Doctor   @relation(fields: [doctorId], references: [id])
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@unique([doctorId, scheduledAt])
+}
+
+model QueueToken {
+  id          Int      @id @default(autoincrement())
+  patientId   Int
+  userId      Int?
+  tokenNumber Int
+  status      String   @default("waiting")
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+}

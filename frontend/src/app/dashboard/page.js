@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/common/Navbar';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, CalendarDays, Activity, Search, Sparkles, UserPlus, 
   Trash2, ClipboardList, TrendingUp, DollarSign, Award, Clock,
@@ -24,7 +25,7 @@ export default function Dashboard() {
   if (!user) return null;
 
   // Global State
-  const [activeTab, setActiveTab] = useState(user.role === 'ADMIN' ? 'reports' : user.role === 'RECEPTIONIST' ? 'patients' : 'appointments');
+  const [activeTab, setActiveTab] = useState(user.role === 'admin' ? 'reports' : user.role === 'receptionist' ? 'patients' : 'appointments');
 
   // ==========================================
   // STATE FOR RECEPTIONIST WORKFLOWS
@@ -496,8 +497,8 @@ export default function Dashboard() {
                                 {p.name}
                                 {p.email && <span className="block text-xxs text-slate-400 font-normal mt-0.5">{p.email}</span>}
                               </td>
-                              <td className="py-3.5 text-slate-500 dark:text-slate-400 font-medium">{p.phoneNumber}</td>
-                              <td className="py-3.5 text-slate-500 dark:text-slate-400">
+                              <td className="py-3.5 text-slate-700 dark:text-slate-300 font-medium">{p.phoneNumber}</td>
+                              <td className="py-3.5 text-slate-700 dark:text-slate-300">
                                 {p.age} yrs / <span className="capitalize">{p.gender}</span>
                               </td>
                               <td className="py-3.5 text-right space-x-2">
@@ -734,7 +735,7 @@ export default function Dashboard() {
                 <Activity className="h-5 w-5 text-teal-600" />
                 Active Direct Queue Check-In
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 font-semibold">
+              <p className="text-xs text-slate-700 dark:text-slate-300 mb-6 font-semibold">
                 Generate an immediate waiting token for a direct walk-in patient. Allocates active positions under selected practitioners.
               </p>
 
@@ -831,7 +832,7 @@ export default function Dashboard() {
                             </button>
                             <span className="block text-xxs text-slate-400 mt-0.5">Age: {app.patient?.age}</span>
                           </td>
-                          <td className="py-3.5 text-slate-500 dark:text-slate-400 font-semibold">{app.reason || 'None provided'}</td>
+                          <td className="py-3.5 text-slate-700 dark:text-slate-300 font-semibold">{app.reason || 'None provided'}</td>
                           <td className="py-3.5">
                             <span className={`inline-flex px-2 py-0.5 rounded text-xxs font-extrabold tracking-wide uppercase ${app.status === 'COMPLETED' ? 'bg-teal-500/10 text-teal-600' : app.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
                               {app.status}
@@ -894,7 +895,9 @@ export default function Dashboard() {
                       without optional chaining! If medicalHistory is null (which is the case for Batman, Clark Kent, etc.),
                       this code throws: "Cannot read properties of null (reading 'toUpperCase')" and crashes the app! */}
                   <p className="text-slate-700 dark:text-slate-300 leading-5 text-sm font-semibold">
-                    {selectedPatientHistory.medicalHistory.toUpperCase()}
+                    {selectedPatientHistory.medicalHistory
+  ? selectedPatientHistory.medicalHistory.toUpperCase()
+  : 'No medical history recorded.'}
                   </p>
                 </div>
 
@@ -922,7 +925,7 @@ export default function Dashboard() {
               <Clock className="h-5 w-5 text-teal-600" />
               Active Operations Queue Controller
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 font-semibold">
+            <p className="text-xs text-slate-700 dark:text-slate-300 mb-6 font-semibold">
               Manage patient call sequences for live monitors. Update status from waiting to active calling.
             </p>
 
@@ -992,7 +995,7 @@ export default function Dashboard() {
                     <TrendingUp className="h-5 w-5 text-teal-600" />
                     Doctor Revenue & Operations Report
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold mt-1">
                     System-wide practitioner performance audits. Computes completed bookings and potential sales.
                   </p>
                 </div>
@@ -1070,8 +1073,8 @@ export default function Dashboard() {
                               {item.name}
                               <span className="block text-xxs text-teal-600 dark:text-teal-400 font-semibold uppercase mt-0.5">{item.specialization}</span>
                             </td>
-                            <td className="py-3.5 text-slate-500 dark:text-slate-400">{item.department}</td>
-                            <td className="py-3.5 text-center text-slate-500 dark:text-slate-400">
+                            <td className="py-3.5 text-slate-700 dark:text-slate-300">{item.department}</td>
+                            <td className="py-3.5 text-center text-slate-700 dark:text-slate-300">
                               {item.completedAppointments} Completed / {item.totalAppointments} Total
                             </td>
                             <td className="py-3.5 text-center font-bold text-slate-800 dark:text-slate-200">{item.todayQueueSize} in queue</td>
@@ -1097,7 +1100,7 @@ export default function Dashboard() {
                 <Award className="h-5 w-5 text-teal-600" />
                 Staff Physicians Registry Lookup
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
+              <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold mt-1">
                 Database lookup for credentials. Uses a raw SQL interpolation backend query.
               </p>
             </div>

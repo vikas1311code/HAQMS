@@ -10,15 +10,15 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const router = useRouter();
 
-  // HARDCODED API VALUE: Intentionally hardcoding the backend base URL on the frontend!
-  // This violates production standards and prevents simple domain config, but serves as
-  // a perfect exercise for internship candidates to move to environment variables.
-  const API_BASE_URL = 'http://localhost:5000/api';
+  // API URL
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+  // LOAD USER FROM LOCALSTORAGE
   useEffect(() => {
-    // Check for stored token and user on initialization
     const storedToken = localStorage.getItem('haqms_token');
     const storedUser = localStorage.getItem('haqms_user');
 
@@ -26,89 +26,127 @@ export const AuthProvider = ({ children }) => {
       try {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user details from localStorage', e);
+      } catch (err) {
+        console.error('Failed to parse stored user:', err);
         logout();
       }
     }
+
     setLoading(false);
   }, []);
 
+  // LOGIN
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
 
       const data = await response.json();
 
+      // HANDLE LOGIN FAILURE
       if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
+        return {
+          success: false,
+          error: data.error || 'Invalid credentials',
+        };
       }
 
-      // Inconsistent API returns nested success format for login
-      const receivedToken = data.data.token;
-      const receivedUser = data.data.user;
+      // SUCCESS LOGIN
+      const receivedToken = data.token;
+      const receivedUser = data.user;
 
-      // SECURITY ISSUE: Storing sensitive auth credentials directly in LocalStorage!
       localStorage.setItem('haqms_token', receivedToken);
-      localStorage.setItem('haqms_user', JSON.stringify(receivedUser));
+      localStorage.setItem(
+        'haqms_user',
+        JSON.stringify(receivedUser)
+      );
 
       setToken(receivedToken);
       setUser(receivedUser);
 
       router.push('/dashboard');
-      return { success: true };
+
+      return {
+        success: true,
+      };
     } catch (err) {
-      console.error('[AUTH-ERROR] Login request failed:', err);
-      setError(err.message);
-      return { success: false, error: err.message };
+      console.error('[AUTH-ERROR]', err);
+
+      return {
+        success: false,
+        error: 'Server error. Please try again.',
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (name, email, password, role = 'RECEPTIONIST') => {
+  // REGISTER
+  const register = async (
+    name,
+    email,
+    password,
+    role = 'receptionist'
+  ) => {
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        return {
+          success: false,
+          error: data.error || 'Registration failed',
+        };
       }
 
-      // If registration succeeds, log them in automatically or redirect to login.
-      // Notice inconsistency: signup API returns flat user structure inside "user"
-      // we can trigger login for them.
-      return login(email, password);
+      // AUTO LOGIN AFTER REGISTER
+      return await login(email, password);
     } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
+      console.error('[REGISTER-ERROR]', err);
+
+      return {
+        success: false,
+        error: 'Server error. Please try again.',
+      };
     } finally {
       setLoading(false);
     }
   };
 
+  // LOGOUT
   const logout = () => {
     localStorage.removeItem('haqms_token');
     localStorage.removeItem('haqms_user');
+
     setToken(null);
     setUser(null);
+
     router.push('/login');
   };
 
@@ -122,7 +160,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        API_BASE_URL, // Exposing hardcoded API base URL for convenience
+        API_BASE_URL,
       }}
     >
       {children}
@@ -130,10 +168,15 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// CUSTOM HOOK
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error(
+      'useAuth must be used within an AuthProvider'
+    );
   }
+
   return context;
 };
